@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AdEarn</title>
+
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- ADSTERRA POPUNDER (Runs once per session) -->
+    <script src="https://pl27403139.effectivegatecpm.com/1d/f5/16/1df516a1f9ebe3811ec984dc13c385a9.js"></script>
+
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --bg: #F4F7FE;
+            --white: #ffffff;
+            --text: #333;
+            --success: #00C851;
+            --danger: #ff4444;
+            --nav-height: 60px;
+            --ad-height: 50px;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            /* Padding for Bottom Fixed Elements */
+            padding-bottom: 120px; 
+            overflow-x: hidden;
+        }
+
+        /* --- SCREEN MANAGEMENT --- */
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        .hidden { display: none !important; }
+
+        /* --- UI COMPONENTS --- */
+        .card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-google { background: white; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; color: #333; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        /* --- SPECIFIC PAGES --- */
+        #login-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+        /* Camera UI */
+        .camera-box {
+            width: 250px; height: 250px;
+            background: #000;
+            border-radius: 50%;
+            border: 4px solid var(--primary);
+            margin: 20px auto;
+            overflow: hidden;
+            position: relative;
+        }
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Home Header */
+        .home-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--white);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .wallet-badge {
+            background: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Task Grid */
+        .task-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .task-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* --- FIXED BOTTOM ELEMENTS --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 50px; /* Above Ad */
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 900;
+        }
+        .nav-item {
+            border: none; background: none;
+            color: #999;
+            font-size: 10px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+        .nav-item.center-btn {
+            background: var(--primary);
+            color: white;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            justify-content: center;
+            margin-top: -25px;
+            box-shadow: 0 4px 10px rgba(108, 99, 255, 0.4);
+        }
+        .nav-item.center-btn i { margin: 0; font-size: 24px; }
+
+        /* Sticky Ad Container */
+        .sticky-ad-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: #f0f0f0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top: 1px solid #ddd;
+        }
+
+        /* Video Modal */
+        #video-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        #timer-badge {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.2); color: white;
+            padding: 5px 10px; border-radius: 5px;
+        }
+
+        /* LOADER */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 3000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            color: var(--primary);
+        }
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite; margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <!-- APP LOADER -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <div style="font-weight: bold;">Loading App...</div>
+    </div>
+
+    <!-- ================= 1. LOGIN PAGE ================= -->
+    <div id="login-page" class="page">
+        <div style="text-align: center;">
+            <h1 style="color: var(--primary); margin-bottom: 5px;">AdEarn</h1>
+            <p style="color: #666; font-size: 14px;">Deposit • Watch • Earn</p>
+        </div>
+        <br>
+        <button id="google-login-btn" class="btn btn-google" style="width: 80%;">
+            <i class="fab fa-google"></i> Login with Google
+        </button>
+        <p style="font-size: 11px; color: #999; margin-top: 20px;">
+            One Device Policy Active.
+        </p>
+    </div>
+
+    <!-- ================= 2. KYC PAGE (Fake) ================= -->
+    <div id="kyc-page" class="page">
+        <div class="card">
+            <h2>Face Verification</h2>
+            <p style="font-size: 13px; color: #666;">Government regulations require verification.</p>
+            <div class="camera-box">
+                <video id="kyc-video" autoplay playsinline muted></video>
+            </div>
+            <p id="kyc-status" style="color: var(--primary); font-weight: bold;">Align face in circle</p>
+            <button onclick="captureFace()" id="capture-btn" class="btn btn-primary">Verify Face</button>
+        </div>
+    </div>
+
+    <!-- ================= 3. DEPOSIT PAGE ================= -->
+    <div id="deposit-page" class="page">
+        <div class="card">
+            <i class="fas fa-lock" style="font-size: 30px; color: var(--primary);"></i>
+            <h3>Account Inactive</h3>
+            <p>Activate your wallet to start earning.</p>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                <p style="margin: 0; font-size: 12px; color: #888;">Activation Fee</p>
+                <h1 style="margin: 5px 0; color: #333;">₹199</h1>
+            </div>
+
+            <button onclick="startPayment()" class="btn btn-success">
+                <i class="fas fa-bolt"></i> Pay Now via Zap UPI
+            </button>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="location.reload()" class="btn" style="background: #eee; color: #333;">
+                    Refresh Status
+                </button>
+                <br>
+                <small style="color: #999;">Payment stuck? <a href="#">Help</a></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 4. HOME PAGE ================= -->
+    <div id="home-page" class="page">
+        <!-- ADSTERRA NATIVE (TOP) -->
+        <div style="min-height: 80px; text-align: center; margin-bottom: 10px;">
+            <script async="async" data-cfasync="false" src="https://pl27403145.effectivegatecpm.com/a60d24589777f63578eac8b988b4d15c/invoke.js"></script>
+            <div id="container-a60d24589777f63578eac8b988b4d15c"></div>
+        </div>
+
+        <div class="home-header">
+            <div>
+                <div style="font-weight: bold;" id="user-name">User</div>
+                <div style="font-size: 12px; color: #888;">UID: <span id="user-uid">...</span></div>
+            </div>
+            <div class="wallet-badge">
+                ₹<span id="wallet-balance">0.00</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 15px;">
+            <small style="color: var(--success);"><i class="fas fa-shield-alt"></i> Secure • Safe • Fast</small>
+        </div>
+
+        <h4 style="margin: 0 0 10px 0;">Today's Tasks</h4>
+        <div class="task-grid" id="task-list">
+            <div class="task-card">Loading Tasks...</div>
+        </div>
+    </div>
+
+    <!-- ================= 5. WITHDRAW PAGE ================= -->
+    <div id="withdraw-page" class="page">
+        <h3>Withdraw Funds</h3>
+        <div class="card">
+            <p style="color: #666; font-size: 14px;">Balance: <b id="w-balance">₹0.00</b></p>
+            
+            <label style="font-size: 12px; color:#888;">Select Method</label>
+            <select id="w-method">
+                <option value="UPI">UPI Transfer</option>
+                <option value="BANK">Bank Transfer</option>
+            </select>
+
+            <input type="number" id="w-amount" placeholder="Amount (Min ₹500)">
+            <input type="text" id="w-details" placeholder="UPI ID / Bank Details">
+            
+            <button class="btn btn-primary" onclick="submitWithdraw()">Request Withdrawal</button>
+        </div>
+        <!-- Adsterra 320x50 Placeholder for Withdraw Page -->
+    </div>
+
+    <!-- ================= 6. HISTORY PAGE ================= -->
+    <div id="history-page" class="page">
+        <h3>Activity Log</h3>
+        
+        <!-- ADSTERRA 468x60 (TOP) -->
+        <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+            <script type="text/javascript">
+                atOptions = { 'key' : '67230d4b86a57269c7fe6b29123360f4', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/67230d4b86a57269c7fe6b29123360f4/invoke.js"></script>
+        </div>
+        
+        <div id="history-list">Loading...</div>
+    </div>
+
+    <!-- ================= 7. PROFILE PAGE ================= -->
+    <div id="profile-page" class="page">
+        <div class="card">
+            <img id="p-img" src="" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; background: #ddd;">
+            <h3 id="p-name" style="margin: 5px 0;">User</h3>
+            <p id="p-email" style="font-size: 12px; color: #888;">...</p>
+            <div style="background: #f0f0f0; padding: 5px 10px; border-radius: 5px; display: inline-block; font-size: 12px; margin-top: 5px;">
+                UID: <span id="p-uid">00000</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                <span>Total Earned</span>
+                <b id="p-earned" style="color: var(--success);">₹0</b>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Total Withdrawn</span>
+                <b id="p-withdrawn">₹0</b>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="window.open('https://t.me/yourtelegram')">
+            <i class="fab fa-telegram-plane"></i> Join Telegram
+        </button>
+        <p style="text-align: center; font-size: 12px; margin-top: 20px; color: #aaa;">App Version 1.0.0</p>
+    </div>
+
+    <!-- ================= FIXED UI ELEMENTS ================= -->
+
+    <!-- NAVIGATION (Hidden on Login) -->
+    <nav class="bottom-nav" id="main-nav" style="display: none;">
+        <button class="nav-item" onclick="navTo('withdraw-page')">
+            <i class="fas fa-wallet"></i> Withdraw
+        </button>
+        <button class="nav-item" onclick="navTo('history-page')">
+            <i class="fas fa-history"></i> History
+        </button>
+        <button class="nav-item center-btn" onclick="navTo('home-page')">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="nav-item" onclick="navTo('profile-page')">
+            <i class="fas fa-user"></i> Profile
+        </button>
+    </nav>
+
+    <!-- ADSTERRA 320x50 (FIXED BOTTOM) -->
+    <div class="sticky-ad-container" id="bottom-ad">
+        <script type="text/javascript">
+            atOptions = { 'key' : 'fea800455a50016433e894c069a2a515', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+        </script>
+        <script type="text/javascript" src="https://www.highperformanceformat.com/fea800455a50016433e894c069a2a515/invoke.js"></script>
+    </div>
+
+    <!-- VIDEO PLAYER MODAL -->
+    <div id="video-modal" class="hidden">
+        <div id="timer-badge">Wait: <span id="time-left">0</span>s</div>
+        <video id="ad-player" style="width: 100%; max-height: 80vh;" playsinline></video>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="claim-btn" class="btn btn-success hidden" style="width: 80%;">CLAIM REWARD</button>
+            <p style="color: #999; font-size: 12px; margin-top: 10px;">Warning: Do not refresh.</p>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyDtflVAAjslWhAgiKH-d22SSARKs4-Uxv8",
+            authDomain: "adearn-e40c7.firebaseapp.com",
+            databaseURL: "https://adearn-e40c7-default-rtdb.firebaseio.com",
+            projectId: "adearn-e40c7",
+            storageBucket: "adearn-e40c7.firebasestorage.app",
+            messagingSenderId: "268922818804",
+            appId: "1:268922818804:web:3b5b1b155e083b8035cea1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+        let userData = null;
+
+        // --- GLOBAL FUNCTIONS (Attached to Window for HTML Access) ---
+
+        // 1. Navigation Logic
+        window.navTo = function(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            // Nav Icons Highlighting
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(i => i.classList.remove('active'));
+            
+            if(pageId === 'home-page') navItems[2].classList.add('active');
+            if(pageId === 'withdraw-page') navItems[0].classList.add('active');
+            if(pageId === 'history-page') {
+                navItems[1].classList.add('active');
+                loadHistory();
+            }
+            if(pageId === 'profile-page') {
+                navItems[3].classList.add('active');
+                loadProfile();
+            }
+        }
+
+        // 2. Camera Start
+        window.startCamera = function() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+            .then(stream => { document.getElementById('kyc-video').srcObject = stream; })
+            .catch(err => console.log("Cam Error", err));
+        }
+
+        // 3. Capture Face
+        window.captureFace = function() {
+            const btn = document.getElementById('capture-btn');
+            btn.innerText = "Verifying...";
+            btn.disabled = true;
+            document.getElementById('kyc-video').pause();
+            
+            setTimeout(() => {
+                alert("Face Verified Successfully ✅");
+                let stream = document.getElementById('kyc-video').srcObject;
+                if(stream) stream.getTracks().forEach(track => track.stop());
+                
+                sessionStorage.setItem('kyc_complete', 'true');
+                window.navTo('deposit-page');
+            }, 2000);
+        }
+
+        // 4. Payment Start
+        window.startPayment = function() {
+            if(!currentUser) return;
+            const amount = 199;
+            // CHANGE THIS TO YOUR ACTUAL PHP PAYMENT URL
+            const link = `payment.php?uid=${currentUser.uid}&amt=${amount}`;
+            window.location.href = link; 
+        }
+
+        // 5. Open Ad
+        window.openAd = function(id, url, duration, price) {
+            const modal = document.getElementById('video-modal');
+            const video = document.getElementById('ad-player');
+            const claimBtn = document.getElementById('claim-btn');
+            
+            modal.classList.remove('hidden');
+            video.src = url;
+            video.play();
+            
+            let timeLeft = duration;
+            document.getElementById('time-left').innerText = timeLeft;
+            claimBtn.classList.add('hidden'); // Reset button
+            
+            const timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-left').innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(timer);
+                    claimBtn.classList.remove('hidden');
+                    
+                    claimBtn.onclick = async () => {
+                        modal.classList.add('hidden');
+                        video.pause();
+                        video.src = "";
+                        
+                        // Update Wallet
+                        const userRef = doc(db, "users", currentUser.uid);
+                        await updateDoc(userRef, {
+                            wallet_balance: increment(price),
+                            total_earned: increment(price)
+                        });
+                        
+                        // Add History
+                        await addDoc(collection(db, "ad_views"), {
+                            user_id: currentUser.uid,
+                            ad_id: id,
+                            price: price,
+                            timestamp: serverTimestamp()
+                        });
+
+                        alert(`You Won ₹${price}!`);
+                        const snap = await getDoc(userRef);
+                        userData = snap.data();
+                        initHome();
+                    };
+                }
+            }, 1000);
+        }
+
+        // 6. Withdraw
+        window.submitWithdraw = async function() {
+            const method = document.getElementById('w-method').value;
+            const amount = parseFloat(document.getElementById('w-amount').value);
+            const details = document.getElementById('w-details').value;
+
+            if(!amount || amount < 500) return alert("Minimum withdrawal is ₹500");
+            if(amount > userData.wallet_balance) return alert("Insufficient balance");
+            if(!details) return alert("Enter payment details");
+
+            await addDoc(collection(db, "withdrawals"), {
+                user_id: currentUser.uid,
+                amount: amount,
+                method: method,
+                details: details,
+                status: 'pending',
+                created_at: serverTimestamp()
+            });
+
+            // Optimistic update
+            await updateDoc(doc(db, "users", currentUser.uid), {
+                wallet_balance: increment(-amount),
+                total_withdrawn: increment(amount)
+            });
+
+            alert("Withdrawal Request Sent!");
+            const snap = await getDoc(doc(db, "users", currentUser.uid));
+            userData = snap.data();
+            initHome();
+            window.navTo('home-page');
+        }
+
+        // --- AUTH & INIT LOGIC ---
+
+        document.getElementById('google-login-btn').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(err => alert(err.message));
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            const loader = document.getElementById('loader');
+            
+            if (user) {
+                currentUser = user;
+                await handleUserLogin(user);
+            } else {
+                // Not logged in -> Show Login Page
+                window.navTo('login-page');
+                loader.classList.add('hidden');
+                document.getElementById('main-nav').style.display = 'none';
+                document.getElementById('bottom-ad').style.display = 'none';
+            }
+        });
+
+        async function handleUserLogin(user) {
+            const userRef = doc(db, "users", user.uid);
+            const snap = await getDoc(userRef);
+            const loader = document.getElementById('loader');
+
+            let localDeviceId = localStorage.getItem('device_id');
+            if(!localDeviceId) {
+                localDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('device_id', localDeviceId);
+            }
+
+            if (snap.exists()) {
+                userData = snap.data();
+                if(userData.device_id !== localDeviceId) {
+                    alert("Account is active on another device.");
+                    auth.signOut();
+                    loader.classList.add('hidden');
+                    return;
+                }
+                
+                if(userData.deposit_status === 'success') {
+                    initHome();
+                } else {
+                    if(sessionStorage.getItem('kyc_complete')) {
+                        window.navTo('deposit-page');
+                    } else {
+                        window.navTo('kyc-page');
+                        window.startCamera();
+                    }
+                }
+            } else {
+                // Register
+                const uid = Math.floor(10000 + Math.random() * 90000).toString();
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    name: user.displayName,
+                    email: user.email,
+                    app_uid: uid,
+                    device_id: localDeviceId,
+                    deposit_status: 'pending',
+                    wallet_balance: 0,
+                    total_earned: 0,
+                    total_withdrawn: 0,
+                    role: 'user',
+                    created_at: serverTimestamp()
+                });
+                userData = { app_uid: uid };
+                window.navTo('kyc-page');
+                window.startCamera();
+            }
+            loader.classList.add('hidden');
+        }
+
+        function initHome() {
+            document.getElementById('user-name').innerText = userData.name.split(" ")[0];
+            document.getElementById('user-uid').innerText = userData.app_uid;
+            document.getElementById('wallet-balance').innerText = userData.wallet_balance.toFixed(2);
+            document.getElementById('w-balance').innerText = "₹" + userData.wallet_balance.toFixed(2);
+            
+            document.getElementById('main-nav').style.display = 'flex';
+            document.getElementById('bottom-ad').style.display = 'flex';
+            
+            loadTasks();
+            window.navTo('home-page');
+        }
+
+        async function loadTasks() {
+            const list = document.getElementById('task-list');
+            list.innerHTML = '<div style="text-align:center;">Loading...</div>';
+
+            // Simulated Tasks (Connect to 'ad_settings' collection later)
+            const tasks = [
+                { id: 'ad_01', title: 'Watch Ad', price: 5, duration: 15, url: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { id: 'ad_02', title: 'Premium Ad', price: 10, duration: 30, url: 'https://www.w3schools.com/html/movie.mp4' }
+            ];
+
+            list.innerHTML = '';
+            tasks.forEach(task => {
+                const div = document.createElement('div');
+                div.className = 'task-card';
+                div.innerHTML = `
+                    <div>
+                        <strong>${task.title}</strong><br>
+                        <small>${task.duration} seconds</small>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="color:var(--success); font-weight:bold;">+₹${task.price}</span><br>
+                        <button class="btn-primary" style="padding:5px 15px; font-size:12px; margin-top:5px;" 
+                        onclick="window.openAd('${task.id}', '${task.url}', ${task.duration}, ${task.price})">
+                        Play <i class="fas fa-play"></i></button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function loadProfile() {
+            document.getElementById('p-img').src = currentUser.photoURL;
+            document.getElementById('p-name').innerText = userData.name;
+            document.getElementById('p-email').innerText = userData.email;
+            document.getElementById('p-uid').innerText = userData.app_uid;
+            document.getElementById('p-earned').innerText = "₹" + (userData.total_earned || 0);
+            document.getElementById('p-withdrawn').innerText = "₹" + (userData.total_withdrawn || 0);
+        }
+
+        async function loadHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = "Loading...";
+            
+            const q = query(collection(db, "ad_views"), where("user_id", "==", currentUser.uid));
+            const snap = await getDocs(q);
+            
+            if(snap.empty) { list.innerHTML = "No history."; return; }
+            
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                const div = document.createElement('div');
+                div.className = "card";
+                div.style.textAlign = "left";
+                div.style.padding = "10px";
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Ad Reward</span>
+                        <span style="color:var(--success)">+₹${d.price}</span>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
